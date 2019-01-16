@@ -1,4 +1,6 @@
 import logging
+import pickle
+
 import coloredlogs
 from Common import *
 from parser import parse
@@ -29,14 +31,21 @@ class SimpleModel(Model):
         self.score = GetScore
         self.feature_extractor = graph_feature_extractor
 
+    def save_w(self):
+        fname = 'w_simple_{}'.format(self.iter)
+        with open(fname, 'wb') as handle:
+            pickle.dump(self.w, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 if __name__ == '__main__':
     all_data = parse('data/train.labeled')
-    simple_model = SimpleModel(all_data, 20)
-    simple_model.train()
-    test = parse('data/test.labeled')
-    for idx, sentence in enumerate(test):
-        new_sentence = simple_model.infer(sentence)
-        sent_value = sum([1 for i in range(len(sentence)) if new_sentence[i].head == sentence[i].head])
-        sent_accuracy = sent_value/len(sentence)
-        logger.debug("sentence number: {} with accuracy:{}".format(idx, sent_accuracy))
+    test_data = parse('data/test.labeled')
+    for n in [20, 50, 80, 100]:
+        simple_model = SimpleModel(all_data, n)
+        simple_model.train()
+        results = simple_model.test(test_data)
+        fname = 'results_for_{}_iterations_simple'.format(n)
+        with open(fname, 'w') as f:
+            f.write(results)
+
+

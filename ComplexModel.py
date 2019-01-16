@@ -10,29 +10,28 @@ coloredlogs.install(level='DEBUG')
 coloredlogs.install(level='DEBUG', logger=logger)
 
 
-class GetScore:
-
+class GetScoreComplex:
     def __init__(self, sentence, w):
         self.sentence = sentence
         self.w = w
 
     def __call__(self, *args, **kwargs):
         parent, child = args[0], args[1]
-        features = feature_extractor(self.sentence, parent, child)
+        features = feature_extractor_complex(self.sentence, parent, child)
         return dot(features, self.w)
 
 
-class SimpleModel(Model):
+class ComplexModel(Model):
 
     def __init__(self, parse_data, iteration_number):
         Model.__init__(self, parse_data, iteration_number)
-        self.score = GetScore
-        self.feature_extractor = graph_feature_extractor
+        self.score = GetScoreComplex
+        self.feature_extractor = graph_feature_extractor_complex
 
 
 if __name__ == '__main__':
     all_data = parse('data/train.labeled')
-    simple_model = SimpleModel(all_data, 20)
+    simple_model = ComplexModel(all_data, 20)
     simple_model.train()
     test = parse('data/test.labeled')
     for idx, sentence in enumerate(test):

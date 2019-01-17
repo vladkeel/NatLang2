@@ -1,3 +1,5 @@
+from collections import defaultdict
+from functools import reduce
 
 def feature_extractor(sentence, parent, child):
     c_pos = sentence[child-1].pos
@@ -68,18 +70,20 @@ def feature_extractor_complex(sentence, parent, child):
 
 
 def graph_feature_extractor(sentence, graph):
-    sum_dict = {}
+    dicts = []
     for key, value in graph.items():
         for vertex in value:
-            sum_dict = operation(feature_extractor(sentence, key, vertex), sum_dict, '+')
+            dicts.append(feature_extractor(sentence, key, vertex))
+    sum_dict = reduce(plus, dicts, {})
     return sum_dict
 
 
 def graph_feature_extractor_complex(sentence, graph):
-    sum_dict = {}
+    dicts = []
     for key, value in graph.items():
         for vertex in value:
-            sum_dict = operation(feature_extractor_complex(sentence, key, vertex), sum_dict, '+')
+            dicts.append(feature_extractor_complex(sentence, key, vertex))
+    sum_dict = reduce(plus, dicts, {})
     return sum_dict
 
 
@@ -98,7 +102,40 @@ def build_real_graph(sentence):
 
 
 def dot(a, b):
-    return sum([a.get(key, 0)*b.get(key, 0) for key in a.keys()])
+    if len(a) > len(b):
+        a, b = b, a
+    return sum([a[key]*b[key] for key in a.keys() if key in b])
+
+
+def dot_t(a, b):
+    if len(a) < len(b):
+        return sum([a[key]*b.get(key, 0) for key in a.keys()])
+    else:
+        return sum([b[key]*a.get(key, 0) for key in b.keys()])
+
+
+def plus(a,b):
+    for k,v in b.items():
+        a[k] = a.get(k,0) + v
+    return a
+
+
+def minus(a,b):
+    for k,v in b.items():
+        a[k] = a.get(k,0) - v
+    return a
+
+def operation_t(a, b, op):
+    ret = defaultdict(int)
+    for k,v in a.items():
+        ret[k] += v
+    if op == '+':
+        for k,v in b.items():
+            ret[k] += v
+    else:
+        for k,v in b.items():
+            ret[k] -= v
+    return ret
 
 
 def operation(a, b, op):

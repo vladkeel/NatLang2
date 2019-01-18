@@ -1,6 +1,4 @@
-import logging
 from collections import namedtuple
-import coloredlogs
 from Common import *
 from chu_liu import Digraph
 

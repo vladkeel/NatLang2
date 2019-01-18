@@ -68,14 +68,17 @@ class Model:
                 digraph = Digraph(full_graph, get_score_func)
                 graph = build_real_graph(sentence)
                 mst = digraph.mst().successors
-                if not is_equal(mst, graph):
+                add_graph = {}
+                rm_graph = {}
+                for k in graph.keys():
+                    add_graph[k] = [v for v in graph[k] if v not in mst[k]]
+                    rm_graph[k] = [v for v in mst[k] if v not in graph[k]]
+                if any(add_graph.values()):
                     flag = False
-                    col = [self.w, self.graph_feature_extractor(idx, graph, sentence)]
+                    col = [self.w, self.graph_feature_extractor(idx, add_graph, sentence)]
                     temp_w = reduce(plus, col, {})
-                    col2 = [temp_w, self.graph_feature_extractor(idx, mst, sentence)]
+                    col2 = [temp_w, self.graph_feature_extractor(idx, rm_graph, sentence)]
                     self.w = reduce(minus, col2, {})
-                    # temp_w = operation(self.w, self.feature_extractor(sentence, graph), '+')
-                    # self.w = operation(temp_w, self.feature_extractor(sentence, mst), '-')
             #self.w = {k: v for k, v in self.w.items() if abs(v) > 1}
         logger.critical("workout complete")
         self.save_w()

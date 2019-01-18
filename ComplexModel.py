@@ -71,8 +71,10 @@ def feature_extractor(sentence_idx, parent, child, sentence):
 
 class ComplexModel(Model):
 
-    def __init__(self, parse_data, iteration_number, feature_extractor):
+    def __init__(self, parse_data, iteration_number, feature_extractor, w=None):
         Model.__init__(self, parse_data, iteration_number, feature_extractor)
+        if w:
+            self.w = w
 
     def save_w(self):
         fname = 'w_complex_{}'.format(self.iter)

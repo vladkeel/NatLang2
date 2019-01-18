@@ -1,6 +1,6 @@
 import logging
 import pickle
-from parser import parse
+from data_parser import parse
 import coloredlogs
 from Model import Model, global_cache
 from os.path import isfile

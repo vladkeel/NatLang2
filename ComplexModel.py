@@ -1,16 +1,9 @@
-import logging
 import pickle
 
-import coloredlogs
 from data_parser import parse
 from Model import Model, global_cache
 from os.path import isfile
 import sys
-
-logging.basicConfig(filename='logger.txt', level=logging.DEBUG)
-logger = logging.getLogger()
-coloredlogs.install(level='DEBUG')
-coloredlogs.install(level='DEBUG', logger=logger)
 
 
 def feature_extractor(sentence_idx, parent, child, sentence):

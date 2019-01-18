@@ -2,7 +2,7 @@ import logging
 import pickle
 
 import coloredlogs
-from parser import parse
+from data_parser import parse
 from Model import Model, global_cache
 
 logging.basicConfig(filename='logger.txt', level=logging.DEBUG)

@@ -4,7 +4,7 @@ from datetime import datetime
 import sys
 
 
-def progress_bar(part, all, word):
+def progress_bar(part, all_part, word):
     """
     Prints progress bar to console
     Args:
@@ -12,8 +12,8 @@ def progress_bar(part, all, word):
                     where 0 nothing done and 1 completed.
         text: Short string to add after progress bar.
     """
-    progress = part/all
-    text = "\033[1;36m{}\033[0;32m of \033[1;36m{}\033[0;32m {}.".format(part, all, word)
+    progress = float(part)/all_part
+    text = "\033[1;36m{}\033[0;32m of \033[1;36m{}\033[0;32m {}.".format(part, all_part, word)
     if isinstance(progress, int):
         progress = float(progress)
     block = int(round(20 * progress))

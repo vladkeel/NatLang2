@@ -12,34 +12,34 @@ coloredlogs.install(level='DEBUG', logger=logger)
 global_cache = {}
 global_graph_cache = {}
 
-class Model:
-    class GetScore:
 
-        def __init__(self, sentence_idx, w, sentence, feature_extractor):
-            self.feature_extractor = feature_extractor
-            self.sentence_idx = sentence_idx
-            self.sentence = sentence
-            self.w = w
-            self.cache = {}
+class GetScore:
 
-        def __call__(self, *args, **kwargs):
-            parent, child = args[0], args[1]
-            key = (parent, child)
-            if key in self.cache:
-                return self.cache[key]
-            features = self.feature_extractor(self.sentence_idx, parent, child, self.sentence)
-            self.cache[key] = dot(features, self.w)
+    def __init__(self, sentence_idx, w, sentence, feature_extractor):
+        self.feature_extractor = feature_extractor
+        self.sentence_idx = sentence_idx
+        self.sentence = sentence
+        self.w = w
+        self.cache = {}
+
+    def __call__(self, *args, **kwargs):
+        parent, child = args[0], args[1]
+        key = (parent, child)
+        if key in self.cache:
             return self.cache[key]
+        features = self.feature_extractor(self.sentence_idx, parent, child, self.sentence)
+        self.cache[key] = dot(features, self.w)
+        return self.cache[key]
 
-    def __init__(self, parse_data, iteration_number):
+
+class Model:
+
+    def __init__(self, parse_data, iteration_number, feature_extractor):
+        self.feature_extractor = feature_extractor
         self.all_data = parse_data
         self.iter = iteration_number
         self.w = {}
         self.score = None
-
-    @staticmethod
-    def feature_extractor(sentence_idx, parent, child, sentence):
-        pass
 
     def graph_feature_extractor(self, sentence_idx, graph, sentence):
         if (sentence_idx, str(graph)) in global_graph_cache:
@@ -64,7 +64,7 @@ class Model:
                 if idx % 1000 == 0:
                     logger.warning("sentence number: {} from {}".format(idx, len(self.all_data)))
                 full_graph = build_full_graph(len(sentence))
-                get_score_func = self.GetScore(idx, self.w, sentence, self.feature_extractor)
+                get_score_func = GetScore(idx, self.w, sentence, self.feature_extractor)
                 digraph = Digraph(full_graph, get_score_func)
                 graph = build_real_graph(sentence)
                 mst = digraph.mst().successors
@@ -75,10 +75,8 @@ class Model:
                     rm_graph[k] = [v for v in mst[k] if v not in graph[k]]
                 if any(add_graph.values()):
                     flag = False
-                    col = [self.w, self.graph_feature_extractor(idx, add_graph, sentence)]
-                    temp_w = reduce(plus, col, {})
-                    col2 = [temp_w, self.graph_feature_extractor(idx, rm_graph, sentence)]
-                    self.w = reduce(minus, col2, {})
+                    temp_w = reduce(plus, [self.graph_feature_extractor(idx, add_graph, sentence)], self.w)
+                    self.w = reduce(minus, [self.graph_feature_extractor(idx, rm_graph, sentence)], temp_w)
             #self.w = {k: v for k, v in self.w.items() if abs(v) > 1}
         logger.critical("workout complete")
         self.save_w()
@@ -97,7 +95,7 @@ class Model:
 
     def infer(self, sentence):
         full_graph = build_full_graph(len(sentence))
-        get_score_func = self.GetScore(-1, self.w, sentence, self.feature_extractor)
+        get_score_func = GetScore(-1, self.w, sentence, self.feature_extractor)
         digraph = Digraph(full_graph, get_score_func)
         mst = digraph.mst().successors
         mst = inverse_graph(mst)

@@ -4,6 +4,7 @@ from parser import parse
 import coloredlogs
 from Model import Model, global_cache
 from os.path import isfile
+import sys
 
 logging.basicConfig(filename='logger.txt', level=logging.DEBUG)
 logger = logging.getLogger()
@@ -62,18 +63,19 @@ class SimpleModel(Model):
 if __name__ == '__main__':
     all_data = parse('data/train.labeled')
     test_data = parse('data/test.labeled')
-    for n in [20, 50, 80, 100]:
-        if isfile('w_simple_{}'.format(n)):
-            if isfile('results_for_{}_iterations_simple'.format(n)):
-                continue
-            w = pickle.load(open('w_simple_{}'.format(n), 'rb'))
-            simple_model = SimpleModel(all_data, n, w)
-        else:
-            simple_model = SimpleModel(all_data, n)
-            simple_model.train()
-        results = simple_model.test(test_data)
-        fname = 'results_for_{}_iterations_simple'.format(n)
-        with open(fname, 'w') as f:
-            f.write(str(results))
+    #for n in [20, 50, 80, 100]:
+    n = sys.argv[1]
+    if isfile('w_simple_{}'.format(n)):
+        if isfile('results_for_{}_iterations_simple'.format(n)):
+            exit(0)
+        w = pickle.load(open('w_simple_{}'.format(n), 'rb'))
+        simple_model = SimpleModel(all_data, n, w)
+    else:
+        simple_model = SimpleModel(all_data, n)
+        simple_model.train()
+    results = simple_model.test(test_data)
+    fname = 'results_for_{}_iterations_simple'.format(n)
+    with open(fname, 'w') as f:
+        f.write(str(results))
 
 

@@ -4,6 +4,8 @@ import pickle
 import coloredlogs
 from data_parser import parse
 from Model import Model, global_cache
+from os.path import isfile
+import sys
 
 logging.basicConfig(filename='logger.txt', level=logging.DEBUG)
 logger = logging.getLogger()
@@ -81,10 +83,17 @@ class ComplexModel(Model):
 if __name__ == '__main__':
     all_data = parse('data/train.labeled')
     test_data = parse('data/test.labeled')
-    for n in [20, 50, 80, 100]:
-        complex_model = ComplexModel(all_data, n, feature_extractor)
-        complex_model.train()
-        results = complex_model.test(test_data)
-        fname = 'results_for_{}_iterations_complex'.format(n)
-        with open(fname, 'w') as f:
-            f.write(str(results))
+    n = int(sys.argv[1])
+    if isfile('w_complex_{}'.format(n)):
+        if isfile('results_for_{}_iterations_complex'.format(n)):
+            exit(0)
+        w = pickle.load(open('w_complex_{}'.format(n), 'rb'))
+        print("w:\n{}".format(w))
+        simple_model = ComplexModel(all_data, n, feature_extractor, w)
+    else:
+        simple_model = ComplexModel(all_data, n, feature_extractor)
+        simple_model.train()
+    results = simple_model.test(test_data)
+    fname = 'results_for_{}_iterations_complex'.format(n)
+    with open(fname, 'w') as f:
+        f.write(str(results))

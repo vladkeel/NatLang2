@@ -1,5 +1,42 @@
 from collections import defaultdict
 from functools import reduce
+from datetime import datetime
+import sys
+
+
+def progress_bar(part, all, word):
+    """
+    Prints progress bar to console
+    Args:
+        progress: float in [0,1] representing progress in action
+                    where 0 nothing done and 1 completed.
+        text: Short string to add after progress bar.
+    """
+    progress = part/all
+    text = "\033[1;36m{}\033[0;32m of \033[1;36m{}\033[0;32m {}.".format(part, all, word)
+    if isinstance(progress, int):
+        progress = float(progress)
+    block = int(round(20 * progress))
+    progress_line = "\r\033[0;32mCompleted: \033[1;31m[{0}] {1:5.2f}% \033[0;32m{2}.\033[0;0m"\
+        .format("#" * block + "-" * (20 - block), progress * 100, text)
+    sys.stdout.write(progress_line)
+    if progress == 1:
+        sys.stdout.write('\n')
+    sys.stdout.flush()
+
+
+class Logger:
+    def __init__(self, file=None):
+        self.handle = open(file, 'w') if file else sys.stdout
+
+    def warning(self, text):
+        sys.stdout.write("\033[0;35m{} \033[0;0m{} \033[1;34m{}\033[0;0m\n".format(datetime.now(), "WARNING", text))
+
+    def critical(self, text):
+        sys.stdout.write("\033[0;35m{} \033[0;0m{} \033[1;31m{}\033[0;0m\n".format(datetime.now(), "CRITICAL", text))
+
+    def debug(self, text):
+        sys.stdout.write("\033[0;35m{} \033[0;0m{} \033[0;32m{}\033[0;0m\n".format(datetime.now(), "DEBUG", text))
 
 def feature_extractor(sentence, parent, child):
     c_pos = sentence[child-1].pos

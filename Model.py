@@ -4,10 +4,7 @@ import coloredlogs
 from Common import *
 from chu_liu import Digraph
 
-logging.basicConfig(filename='logger.txt', level=logging.DEBUG)
-logger = logging.getLogger()
-coloredlogs.install(level='DEBUG')
-coloredlogs.install(level='DEBUG', logger=logger)
+logger = Logger()
 
 global_cache = {}
 global_graph_cache = {}
@@ -53,7 +50,7 @@ class Model:
         return sum_dict
 
     def train(self):
-        logger.critical("starting training")
+        logger.critical("Start training")
         flag = False
         for i in range(self.iter):
             logger.debug("iteration {} from {}".format(i+1, self.iter))
@@ -61,8 +58,6 @@ class Model:
                 break
             flag = True
             for idx, sentence in enumerate(self.all_data, start=1):
-                if idx % 1000 == 0:
-                    logger.warning("sentence number: {} from {}".format(idx, len(self.all_data)))
                 full_graph = build_full_graph(len(sentence))
                 get_score_func = GetScore(idx, self.w, sentence, self.feature_extractor)
                 digraph = Digraph(full_graph, get_score_func)
@@ -77,8 +72,8 @@ class Model:
                     flag = False
                     temp_w = reduce(plus, [self.graph_feature_extractor(idx, add_graph, sentence)], self.w)
                     self.w = reduce(minus, [self.graph_feature_extractor(idx, rm_graph, sentence)], temp_w)
-            #self.w = {k: v for k, v in self.w.items() if abs(v) > 1}
-        logger.critical("workout complete")
+                progress_bar(idx, len(self.all_data), "sentences")
+        logger.critical("Training complete")
         self.save_w()
 
     def save_w(self):
@@ -87,10 +82,13 @@ class Model:
     def test(self, test_data):
         words = 0
         correct = 0
-        for idx, sentence in enumerate(test_data):
+        logger.critical("Start testing")
+        for idx, sentence in enumerate(test_data, start=1):
             words += len(sentence)
             new_sentence = self.infer(sentence)
             correct += sum([1 for i in range(len(sentence)) if new_sentence[i].head == sentence[i].head])
+            progress_bar(idx, len(test_data), "sentences")
+        logger.critical("Test complete.")
         return correct/words
 
     def infer(self, sentence):

@@ -62,7 +62,6 @@ class SimpleModel(Model):
 if __name__ == '__main__':
     all_data = parse('data/train.labeled')
     test_data = parse('data/test.labeled')
-    #for n in [20, 50, 80, 100]:
     n = int(sys.argv[1])
     if isfile('w_simple_{}'.format(n)):
         if isfile('results_for_{}_iterations_simple'.format(n)):

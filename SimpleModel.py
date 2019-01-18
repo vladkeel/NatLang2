@@ -1,8 +1,7 @@
 import logging
 import pickle
-
-import coloredlogs
 from parser import parse
+import coloredlogs
 from Model import Model, global_cache
 from os.path import isfile
 
@@ -21,7 +20,7 @@ class SimpleModel(Model):
 
     @staticmethod
     def feature_extractor(sentence_idx, parent, child, sentence):
-        if (sentence_idx, parent, child) in global_cache:
+        if sentence_idx != -1 and (sentence_idx, parent, child) in global_cache:
             return global_cache[(sentence_idx, parent, child)]
         c_pos = sentence[child - 1].pos
         c_token = sentence[child - 1].token
@@ -50,7 +49,8 @@ class SimpleModel(Model):
         feature[key] = 1
         key = 'f_13_{}_{}'.format(p_pos, c_pos)
         feature[key] = 1
-        global_cache[(sentence_idx, parent, child)] = feature
+        if sentence_idx != -1:
+            global_cache[(sentence_idx, parent, child)] = feature
         return feature
 
     def save_w(self):

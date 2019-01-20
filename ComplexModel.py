@@ -6,9 +6,9 @@ from os.path import isfile
 import sys
 
 
-def feature_extractor(sentence_idx, parent, child, sentence):
-    if (sentence_idx, parent, child) in global_cache:
-        return global_cache[(sentence_idx, parent, child)]
+def complex_feature_extractor(sentence_idx, parent, child, sentence):
+    # if sentence_idx != -1 and (sentence_idx, parent, child) in global_cache:
+    #    return global_cache[(sentence_idx, parent, child)]
     c_pos = sentence[child - 1].pos
     c_token = sentence[child - 1].token
     if parent == 0:
@@ -17,55 +17,57 @@ def feature_extractor(sentence_idx, parent, child, sentence):
     else:
         p_pos = sentence[parent - 1].pos
         p_token = sentence[parent - 1].token
-    feature = {}
-    key = 'f1_{}_{}'.format(p_token, p_pos)
-    feature[key] = 1
-    key = 'f2_{}'.format(p_token)
-    feature[key] = 1
-    key = 'f3_{}'.format(p_pos)
-    feature[key] = 1
-    key = 'f4_{}_{}'.format(c_token, c_pos)
-    feature[key] = 1
-    key = 'f5_{}'.format(c_token)
-    feature[key] = 1
-    key = 'f6_{}'.format(c_pos)
-    feature[key] = 1
-    key = 'f8_{}_{}_{}'.format(p_pos, c_token, c_pos)
-    feature[key] = 1
-    key = 'f10_{}_{}_{}'.format(p_token, p_pos, c_pos)
-    feature[key] = 1
-    key = 'f_13_{}_{}'.format(p_pos, c_pos)
-    feature[key] = 1
-    key = 'f7_{}_{}_{}_{}'.format(p_token, p_pos, c_token, c_pos)
-    feature[key] = 1
-    key = 'f9_{}_{}_{}'.format(p_token, c_token, c_pos)
-    feature[key] = 1
-    key = 'f11_{}_{}_{}'.format(p_token, p_pos, c_token)
-    feature[key] = 1
-    key = 'f12_{}_{}'.format(p_token, c_token)
-    feature[key] = 1
+    l_p_pos = l_c_pos = 'BEGIN'
+    r_p_pos = r_c_pos = 'END'
     if child > 1:
-        l_token = sentence[child - 2].token
-        l_pos = sentence[child - 2].pos
-        key = 'f20_{}_{}_{}'.format(c_pos, p_pos, l_pos)
-        feature[key] = 1
-        key = 'f22_{}_{}_{}_{}'.format(c_pos, p_pos, l_pos, l_token)
-        feature[key] = 1
-    elif child < len(sentence):
-        r_token = sentence[child].token
-        r_pos = sentence[child].pos
-        key = 'f21_{}_{}_{}'.format(c_pos, p_pos, r_pos)
-        feature[key] = 1
-        key = 'f23_{}_{}_{}_{}'.format(c_pos, p_pos, r_pos, r_token)
-        feature[key] = 1
-    global_cache[(sentence_idx, parent, child)] = feature
+        l_c_pos = sentence[child - 2].pos
+    if child < len(sentence):
+        r_c_pos = sentence[child].pos
+    if parent > 1:
+        l_p_pos = sentence[parent-2].pos
+    if parent < len(sentence):
+        r_p_pos = sentence[parent].pos
+
+    distance = str(abs(parent - child))
+    # key = 'f1_{}_{}'.format(p_token, p_pos)
+    # key = 'f2_{}'.format(p_token)
+    # key = 'f3_{}'.format(p_pos)
+    # key = 'f4_{}_{}'.format(c_token, c_pos)
+    # key = 'f5_{}'.format(c_token)
+    # key = 'f6_{}'.format(c_pos)
+    # key = 'f_13_{}_{}'.format(p_pos, c_pos)
+    feature = ('f8_{}_{}_{}'.format(p_pos, c_token, c_pos),
+               'f7_{}_{}_{}_{}'.format(p_token, p_pos, c_token, c_pos),
+               'f9_{}_{}_{}'.format(p_token, c_token, c_pos),
+               'f10_{}_{}_{}'.format(p_token, p_pos, c_pos),
+               'f11_{}_{}_{}'.format(p_token, p_pos, c_token),
+               'f12_{}_{}'.format(p_token, c_token),
+               'f14_{}_{}'.format(p_pos, distance),
+               'f15_{}_{}_{}'.format(p_pos, c_pos, distance),
+               'f16_{}_{}'.format(l_c_pos, p_pos),
+               'f17_{}_{}_{}'.format(c_pos, l_c_pos, p_pos),
+               'f18_{}_{}_{}'.format(c_pos, r_c_pos, p_pos),
+               'f19_{}_{}_{}'.format(l_c_pos, r_c_pos, p_pos),
+               'f20_{}_{}_{}_{}'.format(c_pos, p_pos, l_c_pos, r_p_pos),
+               'f21_{}_{}_{}'.format(p_pos, l_c_pos, r_p_pos),
+               'f22_{}_{}_{}'.format(c_pos, l_c_pos, r_p_pos),
+               'f23_{}_{}'.format(l_c_pos, r_p_pos),
+               'f24_{}_{}_{}_{}'.format(c_pos, r_c_pos, p_pos, l_p_pos),
+               'f25_{}_{}_{}'.format(c_pos, p_pos, l_p_pos),
+               'f26_{}_{}_{}'.format(c_pos, r_c_pos, l_p_pos),
+               'f27_{}_{}_{}_{}'.format(l_c_pos, r_c_pos, l_p_pos, r_p_pos),
+               'f28_{}_{}_{}'.format(r_c_pos, l_p_pos, r_p_pos),
+               'f29_{}_{}_{}'.format(l_c_pos, l_p_pos, r_p_pos)
+               )
+    # if sentence_idx != -1:
+    #    global_cache[(sentence_idx, parent, child)] = feature
     return feature
 
 
 class ComplexModel(Model):
 
-    def __init__(self, parse_data, iteration_number, feature_extractor, w=None):
-        Model.__init__(self, parse_data, iteration_number, feature_extractor)
+    def __init__(self, parse_data, feature_extractor, w=None):
+        Model.__init__(self, parse_data, feature_extractor)
         if w:
             self.w = w
 
@@ -83,11 +85,10 @@ if __name__ == '__main__':
         if isfile('results_for_{}_iterations_complex'.format(n)):
             exit(0)
         w = pickle.load(open('w_complex_{}'.format(n), 'rb'))
-        print("w:\n{}".format(w))
-        simple_model = ComplexModel(all_data, n, feature_extractor, w)
+        simple_model = ComplexModel(all_data, complex_feature_extractor, w)
     else:
-        simple_model = ComplexModel(all_data, n, feature_extractor)
-        simple_model.train()
+        simple_model = ComplexModel(all_data, complex_feature_extractor)
+        simple_model.train(n)
     results = simple_model.test(test_data)
     fname = 'results_for_{}_iterations_complex'.format(n)
     with open(fname, 'w') as f:

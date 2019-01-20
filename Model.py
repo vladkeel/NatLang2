@@ -36,14 +36,11 @@ class Model:
         self.score = None
 
     def graph_feature_extractor(self, sentence_idx, graph, sentence):
-        # if (sentence_idx, str(graph)) in global_graph_cache:
-        #    return global_graph_cache[(sentence_idx, str(graph))]
         features = []
         for key, value in graph.items():
             for vertex in value:
                 features.extend(self.feature_extractor(sentence_idx, key, vertex, sentence))
         sum_features = Counter(features)
-        # global_graph_cache[(sentence_idx, str(graph))] = sum_features
         return sum_features
 
     def perceptron(self):

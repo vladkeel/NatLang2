@@ -1,16 +1,13 @@
-from collections import defaultdict
-from functools import reduce
 from datetime import datetime
 import sys
 
 
 def progress_bar(part, all_part, word):
     """
-    Prints progress bar to console
-    Args:
-        progress: float in [0,1] representing progress in action
-                    where 0 nothing done and 1 completed.
-        text: Short string to add after progress bar.
+    Print progress bar
+    :param part: integer - number of iterations completed
+    :param all_part: complete number of iterations
+    :param word: text to print at the end
     """
     progress = float(part)/all_part
     text = "\033[1;36m{}\033[0;32m of \033[1;36m{}\033[0;32m {}.".format(part, all_part, word)
@@ -55,12 +52,6 @@ def build_real_graph(sentence):
 
 def dot(a, b):
     return sum([a.get(key, 0) for key in b])
-
-
-def dot_t(a, b):
-    if len(a) > len(b):
-        a, b = b, a
-    return sum([a[key]*b[key] for key in a.keys() if key in b])
 
 
 def plus(a, b):

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     else:
         model_type = 'simple'
         model = SimpleModel(all_data, simple_feature_extractor)
-    fname = 'compare_{}_iterations_{}'.format(n, model_type)
+    fname = 'results/compare_{}_iterations_{}'.format(n, model_type)
     with open(fname, 'w') as f:
         logger.critical("Start training")
         f.write('It#\tTest acc\t Train acc\n')

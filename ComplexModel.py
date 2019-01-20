@@ -1,14 +1,12 @@
 import pickle
 
 from data_parser import parse
-from Model import Model, global_cache
+from Model import Model
 from os.path import isfile
 import sys
 
 
 def complex_feature_extractor(sentence_idx, parent, child, sentence):
-    # if sentence_idx != -1 and (sentence_idx, parent, child) in global_cache:
-    #    return global_cache[(sentence_idx, parent, child)]
     c_pos = sentence[child - 1].pos
     c_token = sentence[child - 1].token
     if parent == 0:
@@ -59,8 +57,6 @@ def complex_feature_extractor(sentence_idx, parent, child, sentence):
                'f28_{}_{}_{}'.format(r_c_pos, l_p_pos, r_p_pos),
                'f29_{}_{}_{}'.format(l_c_pos, l_p_pos, r_p_pos)
                )
-    # if sentence_idx != -1:
-    #    global_cache[(sentence_idx, parent, child)] = feature
     return feature
 
 
@@ -72,7 +68,7 @@ class ComplexModel(Model):
             self.w = w
 
     def save_w(self):
-        fname = 'w_complex_{}'.format(self.iter)
+        fname = 'w_pickle/w_complex_{}'.format(self.iter)
         with open(fname, 'wb') as handle:
             pickle.dump(self.w, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -81,15 +77,15 @@ if __name__ == '__main__':
     all_data = parse('data/train.labeled')
     test_data = parse('data/test.labeled')
     n = int(sys.argv[1])
-    if isfile('w_complex_{}'.format(n)):
-        if isfile('results_for_{}_iterations_complex'.format(n)):
+    if isfile('w_pickle/w_complex_{}'.format(n)):
+        if isfile('results/results_for_{}_iterations_complex'.format(n)):
             exit(0)
-        w = pickle.load(open('w_complex_{}'.format(n), 'rb'))
+        w = pickle.load(open('w_pickle/w_complex_{}'.format(n), 'rb'))
         simple_model = ComplexModel(all_data, complex_feature_extractor, w)
     else:
         simple_model = ComplexModel(all_data, complex_feature_extractor)
         simple_model.train(n)
     results = simple_model.test(test_data)
-    fname = 'results_for_{}_iterations_complex'.format(n)
+    fname = 'results/results_for_{}_iterations_complex'.format(n)
     with open(fname, 'w') as f:
         f.write(str(results))

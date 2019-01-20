@@ -17,6 +17,11 @@ def parse(fname):
         for sentence in sentences:
             parsed_sentence = []
             for word in sentence:
-                parsed_sentence.append(Word(counter=int(word[0]), token=word[1], pos=word[3], head=int(word[6])))
+                try:
+                    head = int(word[6])
+                except:
+                    head = 0
+                parsed_sentence.append(Word(counter=int(word[0]), token=word[1], pos=word[3], head=head))
             all_data.append(parsed_sentence)
     return all_data
+

@@ -32,6 +32,7 @@ class Model:
         self.feature_extractor = feature_extractor
         self.all_data = parse_data
         self.iter = 0
+        self.iter_set = False
         self.w = {}
         self.score = None
 
@@ -45,7 +46,8 @@ class Model:
 
     def perceptron(self):
         flag = True
-        self.iter += 1
+        if not self.iter_set:
+            self.iter += 1
         for idx, sentence in enumerate(self.all_data, start=1):
             full_graph = build_full_graph(len(sentence))
             get_score_func = GetScore(idx, self.w, sentence, self.feature_extractor)
@@ -65,6 +67,8 @@ class Model:
         return flag
 
     def train(self, n):
+        self.iter = n
+        self.iter_set = True
         logger.critical("Start training")
         for i in range(n):
             logger.debug("iteration {} from {}".format(i+1, self.iter))

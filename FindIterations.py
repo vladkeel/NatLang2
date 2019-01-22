@@ -3,7 +3,8 @@ from data_parser import parse
 import sys
 from SimpleModel import SimpleModel, simple_feature_extractor
 from ComplexModel import ComplexModel, complex_feature_extractor
-
+import colorama
+colorama.init()
 
 if __name__ == '__main__':
     n = int(sys.argv[2])
@@ -17,7 +18,7 @@ if __name__ == '__main__':
         model_type = 'simple'
         model = SimpleModel(all_data, simple_feature_extractor)
     fname = 'results/compare_{}_iterations_{}'.format(n, model_type)
-    with open(fname, 'w') as f:
+    with open(fname, 'a') as f:
         logger.critical("Start training")
         f.write('It#\tTest acc\t Train acc\n')
         for i in range(n):
@@ -26,6 +27,6 @@ if __name__ == '__main__':
                 break
             result = model.test(test_data)
             result2 = model.test(all_data[:1000])
-            f.write('{}\t{}.6f\t{}.6f'.format(i+1, result, result2))
+            f.write('{0}\t{1:8.5f}\t{2:6.5f}\n'.format(i+1, result, result2))
         model.save_w()
         logger.critical("Training complete")

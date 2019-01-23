@@ -18,7 +18,7 @@ with open('data/comp_m1_302575287.wtag', 'w') as f:
 # Complex model comp
 with open('data/comp_m2_302575287.wtag', 'w') as f:
     comp_data = parse('data/comp.unlabeled')
-    w = pickle.load(open('w_pickle/w_complex_100', 'rb'))
+    w = pickle.load(open('w_pickle/w_complex_50', 'rb'))
     complex_model = ComplexModel(comp_data, complex_feature_extractor, w)
     for sentence in comp_data:
         result = complex_model.infer(sentence)
